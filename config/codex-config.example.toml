@@ -1,0 +1,14 @@
+# Exemplo para ~/.codex/config.toml (ou .codex/config.toml de um projeto confiável).
+# Não há nenhuma chave neste arquivo. As da Plaid são lidas do ambiente (veja .env.example).
+
+# 1) Pluggy: servidor remoto, Streamable HTTP, sem chave.
+[mcp_servers.pluggy]
+url = "https://mcp.pluggy.ai/mcp"
+
+# 2) Plaid: servidor local, STDIO, rodado pelo uvx.
+[mcp_servers.plaid]
+# Se o app não achar o uvx, use o caminho completo (descubra com: which uvx).
+command = "uvx"
+args = ["mcp-server-plaid"]
+# Repassa estas duas variáveis do seu ambiente para o servidor, sem gravar o valor no arquivo.
+env_vars = ["PLAID_CLIENT_ID", "PLAID_SECRET"]

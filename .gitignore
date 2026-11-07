@@ -1,0 +1,13 @@
+# Segredos: nunca versionar
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+.codex/
+
+# Dependências e lixo do sistema
+node_modules/
+.DS_Store
+Thumbs.db

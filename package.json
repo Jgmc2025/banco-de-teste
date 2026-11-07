@@ -1,0 +1,15 @@
+{
+  "name": "assistente-financeiro-viagem",
+  "version": "1.0.0",
+  "description": "Chat financeiro em português dentro de uma agência de viagem fictícia, com dados de teste no formato Plaid Sandbox e documentação de MCP (Pluggy e Plaid).",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 8080",
+    "exemplo": "node scripts/gerar-conversa-exemplo.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

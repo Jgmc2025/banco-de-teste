@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rota Viva - Assistente Financeiro</title>
+  <meta name="description" content="Chat financeiro em português dentro de uma agência de viagem fictícia. Todos os dados são de demonstração.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#mensagem">Ir para o campo de mensagem</a>
+
+  <header class="topo">
+    <div class="marca">
+      <div>
+        <h1>Rota Viva Viagens</h1>
+        <p class="sub">Assistente financeiro para decidir sua viagem</p>
+      </div>
+    </div>
+    <span class="selo" title="Nenhum dado aqui vem de uma conta real">Dados fictícios</span>
+  </header>
+
+  <div class="aviso" role="note">
+    <strong>Ambiente de demonstração.</strong>
+    Contas, saldos e transações são inventados (formato Plaid Sandbox) e a Rota Viva é uma agência fictícia.
+    Valores em US$, com conversão para R$ à taxa fixa de demonstração de <span id="taxa">1 US$ = R$ 5,50</span>, que não é cotação real.
+    Não representa o Open Finance brasileiro. Nunca digite senha, código ou número de cartão.
+  </div>
+
+  <main class="chat">
+    <div id="log" class="log" role="log" aria-live="polite" aria-label="Conversa com o assistente"></div>
+
+    <div id="sugestoes" class="sugestoes" aria-label="Sugestões de perguntas"></div>
+
+    <form id="form" class="entrada" autocomplete="off">
+      <label for="mensagem" class="sr">Sua pergunta</label>
+      <input id="mensagem" name="mensagem" type="text" maxlength="300"
+             placeholder="Ex.: qual é o meu saldo?" enterkeyhint="send" required>
+      <button type="submit">Enviar</button>
+    </form>
+  </main>
+
+  <footer class="rodape">
+    Projeto de estudo (desafio DIO - MCP com Pluggy e Plaid). Dados locais e fictícios, nenhuma chave de API neste site.
+  </footer>
+</body>
+</html>

@@ -39,15 +39,15 @@ Resumo (passo a passo, erros comuns e segurança em [`docs/mcp-setup.md`](docs/m
 [mcp_servers.pluggy]            # remoto, Streamable HTTP, sem chave
 url = "https://mcp.pluggy.ai/mcp"
 
-[mcp_servers.plaid]             # local, STDIO, via uvx
-command = "uvx"                 # ou o caminho completo do uvx
-args = ["mcp-server-plaid"]
-env_vars = ["PLAID_CLIENT_ID", "PLAID_SECRET"]   # lidas do ambiente, nunca gravadas
+[mcp_servers.plaid]             # servidor local deste projeto, via STDIO
+command = "py"
+args = ["-3", "C:\\Users\\lilia\\OneDrive\\Documentos\\banco-de-teste\\scripts\\plaid_sandbox_mcp.py"]
+env_vars = ["PLAID_CLIENT_ID", "PLAID_SECRET"]   # valores herdados do ambiente
 ```
 
 1. **Pluggy:** adicione a URL, confira com `/mcp` e peça que a IA explique o que é um Item, com as fontes.
-2. **Plaid:** copie o Client ID e o secret de **Sandbox** (Developers → Keys), instale o `uv`, exporte as duas variáveis e adicione o servidor.
-3. **Consulta:** crie um Item de teste, leia contas, saldos e transações e peça tabelas com três padrões de gasto.
+2. **Plaid:** configure `PLAID_CLIENT_ID` e `PLAID_SECRET` do ambiente Sandbox nas variáveis do usuário do Windows e acrescente o bloco acima em `C:\Users\lilia\.codex\config.toml`.
+3. **Consulta:** use `plaid_create_sandbox_item` e passe o `item_id` retornado a `plaid_get_accounts`, `plaid_get_balances` e `plaid_get_transactions`. O access token nunca é mostrado e permanece apenas na memória do servidor.
 
 Exemplos prontos e **sem chaves**: [`config/codex-config.example.toml`](config/codex-config.example.toml), [`config/mcp.example.json`](config/mcp.example.json) e [`.env.example`](.env.example).
 

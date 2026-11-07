@@ -1,82 +1,43 @@
-# Como configurar os servidores MCP (Pluggy e Plaid)
+# Servidor MCP local da Plaid Sandbox
 
-MCP (Model Context Protocol) é o padrão que liga a IA a fontes externas, como uma tomada padrão. Neste projeto são dois servidores:
+Este projeto inclui `scripts/plaid_sandbox_mcp.py`, um servidor MCP local via STDIO que conversa diretamente com a Plaid Sandbox. Requer Python 3 e não usa dependências externas. As chaves são lidas exclusivamente de `PLAID_CLIENT_ID` e `PLAID_SECRET` no ambiente.
 
-| Servidor | Tipo | Para que serve aqui | Chave |
-|---|---|---|---|
-| **Pluggy** | Streamable HTTP (remoto) | A IA lê a documentação da integração bancária brasileira e explica conceitos, como o que é um Item | Não precisa |
-| **Plaid** | STDIO (local, via `uvx`) | Cria um banco de teste (Sandbox) com dados fictícios | Client ID e secret de Sandbox |
+## Configurar no Windows
 
-> Os exemplos abaixo usam o **Codex**. Em outra IA o formato muda um pouco, mas a ideia é a mesma: URL para o Pluggy, comando para a Plaid. Há um exemplo em JSON em [`config/mcp.example.json`](../config/mcp.example.json).
+1. No PowerShell, defina as variáveis do ambiente do usuário com as credenciais de **Sandbox** obtidas em Plaid Dashboard → Developers → Keys (substitua os valores localmente; não os inclua em arquivos do projeto):
 
-## 1. Pluggy
+   ```powershell
+   [Environment]::SetEnvironmentVariable('PLAID_CLIENT_ID', '<seu client id de Sandbox>', 'User')
+   [Environment]::SetEnvironmentVariable('PLAID_SECRET', '<seu secret de Sandbox>', 'User')
+   ```
 
-Servidor remoto, sem chave. Em `~/.codex/config.toml`:
+2. Feche e reabra o Codex para que o processo herde as variáveis.
+3. Abra `C:\Users\lilia\.codex\config.toml` e acrescente o bloco abaixo. Preserve outros servidores já configurados. Ajuste o caminho do script se o projeto estiver em outro local:
 
-```toml
-[mcp_servers.pluggy]
-url = "https://mcp.pluggy.ai/mcp"
-```
+   ```toml
+   [mcp_servers.plaid]
+   command = "py"
+   args = ["-3", "C:\\Users\\lilia\\OneDrive\\Documentos\\banco-de-teste\\scripts\\plaid_sandbox_mcp.py"]
+   env_vars = ["PLAID_CLIENT_ID", "PLAID_SECRET"]
+   ```
 
-**Conferir:** no Codex, rode `/mcp` e veja se `pluggy` aparece conectado.
+   Uma cópia desse bloco sem credenciais está em [`config/codex-config.example.toml`](../config/codex-config.example.toml). `env_vars` repassa os nomes do ambiente, sem gravar os valores no TOML. Nunca coloque credenciais em `env` ou no repositório.
+4. Reinicie o Codex e confira `/mcp` para verificar se `plaid` está conectado.
 
-**Primeiro teste (peça com as fontes):**
+## Ferramentas disponíveis
 
-> Explique o que é um Item na Pluggy e cite as fontes da documentação.
+- `plaid_create_sandbox_item`: cria um Item Sandbox (por padrão `ins_109508`, produto `transactions`) e devolve um `item_id` opaco.
+- `plaid_get_accounts`: lista contas do Item.
+- `plaid_get_balances`: consulta saldos atuais.
+- `plaid_get_transactions`: consulta transações; padrão últimos 30 dias, com `start_date` e `end_date` opcionais no formato `YYYY-MM-DD`.
 
-## 2. Plaid
+Passe o `item_id` devolvido ao criar o Item nas outras ferramentas. Os Items e seus access tokens existem apenas na memória do processo; ao reiniciar o servidor, crie outro Item. O access token nunca é retornado por ferramenta. A criação usa `/sandbox/public_token/create` e troca o public token por um access token internamente, fluxo documentado pela Plaid [para Sandbox](https://plaid.com/docs/api/sandbox/).
 
-### 2.1 Chaves de Sandbox
+Os dados são fictícios e a Plaid Sandbox serve apenas para desenvolvimento. Valor positivo em transações indica saída; `balances.current` de cartão de crédito representa dívida.
 
-1. Entre no Dashboard da Plaid, em **Developers → Keys**.
-2. Copie o **Client ID** e o **secret de Sandbox** (use sempre o de Sandbox, nunca o de produção).
-3. Guarde no seu computador, fora do repositório. Este projeto traz [`.env.example`](../.env.example) como modelo e o `.gitignore` já bloqueia `.env`.
+## Diagnóstico
 
-### 2.2 Instalar o uv
-
-O servidor roda pelo `uvx`, que vem com o [uv](https://docs.astral.sh/uv/). Depois de instalar, confirme com `uvx --version` e descubra o caminho com `which uvx` (no Windows, `where uvx`). Se o app da IA não achar o comando sozinho, use o **caminho completo** no campo `command`.
-
-### 2.3 Adicionar o servidor
-
-Em `~/.codex/config.toml` (o arquivo completo de exemplo está em [`config/codex-config.example.toml`](../config/codex-config.example.toml)):
-
-```toml
-[mcp_servers.plaid]
-command = "uvx"          # ou o caminho completo do uvx
-args = ["mcp-server-plaid"]
-env_vars = ["PLAID_CLIENT_ID", "PLAID_SECRET"]
-```
-
-Com `env_vars`, o Codex repassa as duas variáveis do seu ambiente, e o valor das chaves **não** fica gravado no arquivo. Exporte-as no terminal antes de abrir o Codex:
-
-```bash
-export PLAID_CLIENT_ID="..."   # seu Client ID de Sandbox
-export PLAID_SECRET="..."      # seu secret de Sandbox
-```
-
-A alternativa é um bloco `[mcp_servers.plaid.env]` com os valores escritos no arquivo. Funciona, mas é mais arriscado, porque o arquivo pode ser copiado ou aparecer em print.
-
-**Conferir:** `/mcp` deve listar `plaid`. O servidor expõe quatro ferramentas: `search_documentation`, `get_mock_data_prompt`, `get_sandbox_access_token` e `simulate_webhook`.
-
-## 3. Consultar o banco fictício
-
-1. Peça um **Item de teste** (a ferramenta `get_sandbox_access_token` cria a conexão de Sandbox e devolve o token).
-2. Com o token, peça à IA para ler **contas, saldos e transações** pelos endpoints da Plaid (`/accounts/get`, `/accounts/balance/get`, `/transactions/get`). O guia da aula mostra como o Codex faz essa parte.
-3. Peça **tabelas com três padrões de gasto**. Este projeto mostra um exemplo do resultado na pergunta "Quais são meus padrões de gasto?" (veja [`docs/evidencias/conversa-exemplo.md`](evidencias/conversa-exemplo.md)).
-
-**Regra de sinal da Plaid:** valor **positivo** é **saída** (gasto) e valor **negativo** é entrada. Em conta de crédito, `balances.current` é a **dívida**.
-
-## 4. Erros comuns
-
-| Sintoma | Causa provável | O que fazer |
-|---|---|---|
-| `plaid` não aparece em `/mcp` | O app não achou o `uvx` | Use o caminho completo no `command` e reinicie o Codex |
-| Servidor sobe e cai | Variáveis de ambiente vazias | Exporte `PLAID_CLIENT_ID` e `PLAID_SECRET` **antes** de abrir o Codex |
-| Erro de credencial | Chave de produção ou secret trocado | Use as chaves de **Sandbox** da página Keys |
-| Saldo do cartão "negativo" | É dívida, não erro | Veja `balances.current` e `limit` |
-
-## 5. Segurança
-
-- Chave, token e senha **nunca** vão para o repositório, para o README ou para print.
-- O site publicado deste projeto **não** usa as chaves: ele lê dados locais. Para ligar a Plaid de verdade, as chaves ficam num **backend** (Etapa 2 do guia), nunca no navegador.
-- A Plaid Sandbox é só laboratório e **não** representa o Open Finance brasileiro, que em produção exige consentimento e segurança.
+- `py` não encontrado: instale Python 3 pelo instalador oficial e habilite o launcher `py`, ou substitua `command` por um caminho completo para `python.exe`.
+- Credenciais ausentes: defina as variáveis no escopo `User`, encerre todos os processos do Codex e abra-o de novo.
+- Erro de autenticação: confirme que ambas as chaves são do ambiente Sandbox.
+- Depois de reiniciar o servidor, crie um novo Item para obter outro `item_id` válido.

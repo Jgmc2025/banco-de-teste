@@ -1,16 +1,14 @@
 {
-  "_comentario": "Formato .mcp.json (Claude Code e clientes parecidos). Troque os COLE_AQUI só na sua máquina e NÃO versione o arquivo preenchido.",
   "mcpServers": {
-    "pluggy": {
-      "type": "http",
-      "url": "https://mcp.pluggy.ai/mcp"
-    },
     "plaid": {
-      "command": "uvx",
-      "args": ["mcp-server-plaid"],
+      "command": "py",
+      "args": [
+        "-3",
+        "C:\\Users\\lilia\\OneDrive\\Documentos\\banco-de-teste\\scripts\\plaid_sandbox_mcp.py"
+      ],
       "env": {
-        "PLAID_CLIENT_ID": "COLE_AQUI",
-        "PLAID_SECRET": "COLE_AQUI"
+        "PLAID_CLIENT_ID": "${PLAID_CLIENT_ID}",
+        "PLAID_SECRET": "${PLAID_SECRET}"
       }
     }
   }
